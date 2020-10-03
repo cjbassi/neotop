@@ -1,0 +1,54 @@
+name: Publish Binaries
+
+on:
+  release:
+    types:
+      - created
+
+jobs:
+  publish:
+    runs-on: ${{ matrix.os }}
+    strategy:
+      fail-fast: false
+      matrix:
+        os:
+          - ubuntu-latest
+          - macOS-latest
+        target:
+          - x86_64-unknown-linux-gnu
+          - x86_64-apple-darwin
+        exclude:
+          - os: macOS-latest
+            target: x86_64-unknown-linux-gnu
+          - os: ubuntu-latest
+            target: x86_64-apple-darwin
+    steps:
+      - name: Checkout sources
+        uses: actions/checkout@v1
+
+      - name: Install stable toolchain
+        uses: actions-rs/toolchain@v1
+        with:
+          toolchain: stable
+          target: ${{ matrix.target }}
+          override: true
+
+      - name: Build release binary
+        uses: actions-rs/cargo@v1
+        with:
+          use-cross: true
+          command: build
+          args: --release --target=${{ matrix.target }}
+
+      - name: Package release
+        run: tar -czf neotop-${{ github.event.release.tag_name }}-${{ matrix.target }}.tar.gz -C ./target/${{ matrix.target }}/release/ neotop
+
+      - name: Upload release asset
+        uses: actions/upload-release-asset@v1.0.1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          upload_url: ${{ github.event.release.upload_url }}
+          asset_path: neotop-${{ github.event.release.tag_name }}-${{ matrix.target }}.tar.gz
+          asset_name: neotop-${{ github.event.release.tag_name }}-${{ matrix.target }}.tar.gz
+          asset_content_type: application/zip
