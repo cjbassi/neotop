@@ -3,9 +3,7 @@
 ![Minimum rustc version](https://img.shields.io/badge/rustc-1.39+-green.svg)
 [![crates.io](https://img.shields.io/crates/v/neotop.svg)](https://crates.io/crates/neotop)
 
-A Rust port of [htop] with some additional improvements.
-
-Improvements include:
+A Rust port of [htop] with some additional improvements including:
 
 - full vim keybindings
 - bottom keybind bar has been removed
